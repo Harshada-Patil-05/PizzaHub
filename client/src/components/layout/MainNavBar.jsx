@@ -84,7 +84,7 @@ function MainNavbar() {
 
   return (
     <>
-        <nav className="fixed top-0 left-0 bg-white w-full h-20 flex items-center justify-between px-6 sm:px-16 shadow-sm z-50">
+      <nav className="fixed top-0 left-0 bg-white w-full h-16 sm:h-20 flex items-center justify-between px-4 sm:px-16 shadow-sm z-50">
         <NavLink
           href="/"
           className="flex items-center gap-2 text-black font-bold text-xl sm:text-2xl"
@@ -92,14 +92,14 @@ function MainNavbar() {
           <img
             src={Logo}
             alt="PizzaHub Logo"
-            className="h-14 sm:h-16 w-auto object-contain"
+            className="h-9 sm:h-10 md:h-16 w-auto object-contain"
           />
+
           <img
             src={TextLogo}
             alt="PizzaHub Text"
-            className="h-11 sm:h-13 w-auto object-contain"
+            className="h-7 sm:h-9 md:h-12 w-auto object-contain"
           />
-          
         </NavLink>
         {/* // Desktop Menu */}
         <div className="items-center justify-center space-x-4 hidden md:inline-flex">
