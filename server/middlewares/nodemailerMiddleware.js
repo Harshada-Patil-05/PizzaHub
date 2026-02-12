@@ -1,33 +1,27 @@
-const sgMail = require('@sendgrid/mail');
-const dotenv = require('dotenv');
-const emailBaseTemplate = require('../utils/emailBaseTemplate');
+const nodemailer = require("nodemailer");
 
-dotenv.config();
-
-// Set SendGrid API Key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-/**
- * sendEmail - Sends a professional HTML email using SendGrid
- * @param {Object} options - { to, subject, templateOptions, from, text }
- */
-const sendEmail = async ({ to, subject, templateOptions = {}, from, text }) => {
+const sendEmail = async ({ to, subject, html }) => {
   try {
-    const html = emailBaseTemplate(templateOptions);
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+      user: process.env.SENDER_EMAIL,
+      pass: process.env.SENDER_PASSWORD,
+      },
+    });
 
-    const msg = {
+    const mailOptions = {
+      from: process.env.SENDER_EMAIL,
       to,
-      from: from || process.env.SENDER_EMAIL, // must be verified sender
       subject,
       html,
-      text: text || templateOptions.message || '',
     };
 
-    const response = await sgMail.send(msg);
-    return response;
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent:", info.response);
   } catch (error) {
-    console.error('Error sending email:', error.response?.body || error);
-    throw new Error('Email could not be sent!');
+    console.error("Email error:", error);
+    throw new Error("Email could not be sent!");
   }
 };
 
