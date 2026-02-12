@@ -21,7 +21,7 @@ const userRoutes = require('./routes/userRoutes');
 const pizzaRoutes = require('./routes/pizzaRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
-const sendTestEmail = require('./middlewares/nodemailer');
+const sendTestEmail = require('./middlewares/nodemailerMiddleware');
 
 // Create Express App
 const app = express();
