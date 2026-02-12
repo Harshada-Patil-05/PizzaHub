@@ -11,14 +11,15 @@ const Pizza = require("../schemas/pizzaSchema");
 const User = require("../schemas/userSchema");
 const sendEmail = require("../middlewares/nodemailerMiddleware");
 
+// Initialize Controllers
 
-// ==============================
-// Create Razorpay Order
-// ==============================
+// @desc Create Razorpay Order
+// @route POST /api/orders/checkout
+// @access Private
 
 const createRazorpayOrder = asyncHandler(async (req, res) => {
   try {
-    const { amount } = req.body;
+    const { amount, currency } = req.body;
 
     const instance = new RazorPay({
       key_id: process.env.RAZORPAY_KEY_ID,
@@ -34,23 +35,22 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
 
     const order = await instance.orders.create(options);
 
-    if (!order) {
+    if (order) {
+      res.status(200).json(order);
+    } else {
       res.status(500);
       throw new Error("Order Creation Failed!");
     }
-
-    res.status(200).json(order);
   } catch (error) {
     console.error(error);
     res.status(500);
-    throw new Error(error.message);
+    throw new Error(error);
   }
 });
 
-
-// ==============================
-// Create Order
-// ==============================
+// @desc    Create a new order
+// @route   POST /api/orders
+// @access  Private
 
 const createOrder = asyncHandler(async (req, res) => {
   const {
@@ -62,273 +62,273 @@ const createOrder = asyncHandler(async (req, res) => {
     payment,
   } = req.body;
 
-  // Validations
-  if (!orderItems || !Array.isArray(orderItems) || orderItems.length === 0) {
+  if ((!orderItems && !Array.isArray(orderItems)) || orderItems.length === 0) {
     res.status(400);
     throw new Error("No Order Items");
-  }
+  } else {
+    if (
+      !deliveryAddress ||
+      (!deliveryAddress.phoneNumber &&
+        !deliveryAddress.address &&
+        !deliveryAddress.city &&
+        !deliveryAddress.postalCode &&
+        !deliveryAddress.country)
+    ) {
+      res.status(400);
+      throw new Error("No Delivery Address");
+    } else {
+      if (isNaN(totalPrice) || totalPrice <= 0) {
+        res.status(400);
+        throw new Error("Invalid Total Price");
+      } else {
+        if (deliveryCharges < 0) {
+          res.status(400);
+          throw new Error("Invalid Delivery Charges");
+        } else {
+          if (salesTax < 0) {
+            res.status(400);
+            throw new Error("Invalid Sales Tax");
+          } else {
+            if (!payment || !["stripe", "razorpay"].includes(payment.method)) {
+              res.status(400);
+              throw new Error("Invalid Payment Method");
+            } else {
+              if (
+                payment.method === "stripe" &&
+                !payment.stripePaymentIntentId
+              ) {
+                res.status(400);
+                throw new Error("Invalid Stripe Payment Intent Id");
+              } else {
+                if (payment.method === "razorpay" && !payment.razorpayOrderId) {
+                  res.status(400);
+                  throw new Error("Invalid Razorpay Order Id");
+                } else {
+                  // Iterate through orderItems to deduct items from inventory
+                  for (const orderItem of orderItems) {
+                    const pizza = await Pizza.findById(orderItem.pizza || orderItem._id);
+                    if (!pizza) {
+                      res.status(404).json({ message: "Pizza Not Found!" });
+                      return;
+                    }
 
-  if (
-    !deliveryAddress ||
-    !deliveryAddress.phoneNumber ||
-    !deliveryAddress.address ||
-    !deliveryAddress.city ||
-    !deliveryAddress.postalCode ||
-    !deliveryAddress.country
-  ) {
-    res.status(400);
-    throw new Error("No Delivery Address");
-  }
+                    await updateInventoryQuantity(pizza, orderItem.qty);
+                  }
+                  // Prepare order items with pizza names for email
+                  const orderItemsWithNames = [];
 
-  if (isNaN(totalPrice) || totalPrice <= 0) {
-    res.status(400);
-    throw new Error("Invalid Total Price");
-  }
+                  for (const orderItem of orderItems) {
+                    const pizza = await Pizza.findById(orderItem.pizza || orderItem._id);
+                    if (!pizza) {
+                      res.status(404);
+                      throw new Error("Pizza Not Found");
+                    }
 
-  if (deliveryCharges < 0) {
-    res.status(400);
-    throw new Error("Invalid Delivery Charges");
-  }
+                    orderItemsWithNames.push({
+                      name: pizza.name,
+                      qty: orderItem.qty,
+                      price: orderItem.price,
+                    });
+                  }
 
-  if (salesTax < 0) {
-    res.status(400);
-    throw new Error("Invalid Sales Tax");
-  }
+                  const order = new Order({
+                    user: req.user._id,
+                    orderItems: orderItems.map((orderItem) => ({
+                      pizza: orderItem.pizza || orderItem._id,
+                      qty: orderItem.qty,
+                      price: orderItem.price,
+                    })),
+                    deliveryAddress,
+                    salesTax,
+                    deliveryCharges,
+                    totalPrice,
+                    payment,
+                  });
 
-  if (!payment || !["stripe", "razorpay"].includes(payment.method)) {
-    res.status(400);
-    throw new Error("Invalid Payment Method");
-  }
+                  const createdOrder = await order.save();
 
-  if (payment.method === "stripe" && !payment.stripePaymentIntentId) {
-    res.status(400);
-    throw new Error("Invalid Stripe Payment Intent Id");
-  }
+                  if (createdOrder) {
+                    // Send Email Notification to User
+                    const user = await User.findById(req.user._id);
+                    if (user && user.email) {
+                      const emailSubject = "Order Confirmation";
+                      const emailBody = `
+                        <h1>Thank you for your order!</h1>
+                        <p>Your order has been successfully created.</p>
+                        <p>Order Details:</p>
+                        <ul>
+                          ${orderItems
+                            .map(
+                              (item) => `<li>${item.qty} x ${item.name}</li>`,
+                            )
+                            .join("")}
+                        </ul>
+                        <p>Total Price: ${totalPrice}</p>
+                        <p>Delivery Address: ${deliveryAddress.address}, ${deliveryAddress.city}, ${
+                          deliveryAddress.postalCode
+                        }, ${deliveryAddress.country}</p>
+                        <p>We will notify you once your order is out for delivery.</p>
+                        <p>Thank you for choosing our service!</p>
+                      `;
 
-  if (payment.method === "razorpay" && !payment.razorpayOrderId) {
-    res.status(400);
-    throw new Error("Invalid Razorpay Order Id");
-  }
-
-  // Deduct Inventory
-  for (const orderItem of orderItems) {
-    const pizza = await Pizza.findById(orderItem.pizza || orderItem._id);
-    if (!pizza) {
-      res.status(404);
-      throw new Error("Pizza Not Found");
-    }
-
-    await updateInventoryQuantity(pizza, orderItem.qty);
-  }
-
-  // Prepare items for email
-  const orderItemsWithNames = [];
-
-  for (const orderItem of orderItems) {
-    const pizza = await Pizza.findById(orderItem.pizza || orderItem._id);
-    if (!pizza) {
-      res.status(404);
-      throw new Error("Pizza Not Found");
-    }
-
-    orderItemsWithNames.push({
-      name: pizza.name,
-      qty: orderItem.qty,
-      price: orderItem.price,
-    });
-  }
-
-  // Create Order
-  const order = new Order({
-    user: req.user._id,
-    orderItems: orderItems.map((item) => ({
-      pizza: item.pizza || item._id,
-      qty: item.qty,
-      price: item.price,
-    })),
-    deliveryAddress,
-    salesTax,
-    deliveryCharges,
-    totalPrice,
-    payment,
-  });
-
-  const createdOrder = await order.save();
-
-  if (!createdOrder) {
-    res.status(500);
-    throw new Error("Order Creation Failed!");
-  }
-
-  // Send Confirmation Email
-  const user = await User.findById(req.user._id);
-
-  if (user && user.email) {
-    try {
-      await sendEmail({
-        to: user.email,
-        subject: "Order Confirmation",
-        html: `
-          <h1>Order Confirmation</h1>
-          <p>Hi ${user.name || ""},</p>
+                      await sendEmail({
+                        to: user.email,
+                        subject: "Order Confirmation",
+                        templateOptions: {
+                          title: "Order Confirmation",
+                          greeting: `Hi ${user.name || ""},`,
+                          message: `
           <p>Your order has been successfully placed!</p>
-
-          <h3>Order Details:</h3>
+          <p>Order Details:</p>
           <ul>
             ${orderItemsWithNames
               .map((item) => `<li>${item.qty} x ${item.name}</li>`)
               .join("")}
           </ul>
-
-          <p><strong>Total Price:</strong> ₹${totalPrice}</p>
-
-          <p>
-            <strong>Delivery Address:</strong><br/>
-            ${deliveryAddress.address},<br/>
-            ${deliveryAddress.city}, ${deliveryAddress.postalCode},<br/>
-            ${deliveryAddress.country}
-          </p>
-
-          <p>Thank you for choosing PizzaHub!</p>
+          <p>Total Price: ${totalPrice}</p>
+          <p>Delivery Address: ${deliveryAddress.address}, ${deliveryAddress.city}, ${deliveryAddress.postalCode}, ${deliveryAddress.country}</p>
+          <p>Thank you for choosing our service!</p>
         `,
-      });
-    } catch (emailError) {
-      console.error("Order created but email failed:", emailError.message);
+                        },
+                      });
+                    }
+
+                    res.status(200).json({
+                      createdOrder,
+                      message: "Order Created Successfully!",
+                    });
+                  } else {
+                    res.status(500);
+                    throw new Error("Order Creation Failed!");
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
-
-  res.status(200).json({
-    createdOrder,
-    message: "Order Created Successfully!",
-  });
 });
 
-
-// ==============================
-// Get Orders by User
-// ==============================
+// @desc    Get Orders by User Id
+// @route   GET /api/orders/user
+// @access  Private
 
 const getOrdersByUserId = asyncHandler(async (req, res) => {
   const orders = await Order.find({ user: req.user._id })
-    .populate("user", "name")
-    .populate("orderItems.pizza", "name");
+    .populate('user', 'name')
+    .populate('orderItems.pizza', 'name');
 
-  if (!orders) {
+  if (orders) {
+    res.status(200).json(orders);
+  } else {
     res.status(404);
     throw new Error("Orders Not Found!");
   }
-
-  res.status(200).json(orders);
 });
 
 
-// ==============================
-// Get All Orders (Admin)
-// ==============================
+// @desc    Get all Orders
+// @route   GET /api/orders
+// @access  Admin
 
 const getAllOrders = asyncHandler(async (req, res) => {
   const orders = await Order.find({})
-    .populate("user", "name email")
-    .populate("orderItems.pizza", "name");
+  .populate('user', 'name email')
+  .populate('orderItems.pizza', 'name');
 
-  if (!orders) {
+
+  if (orders) {
+    res.status(200).json(orders);
+  } else {
     res.status(404);
     throw new Error("Orders Not Found!");
   }
-
-  res.status(200).json(orders);
 });
 
-
-// ==============================
-// Get Order By ID
-// ==============================
+// @desc    Get Order by Id
+// @route   GET /api/orders/:id
+// @access  Private/Admin
 
 const getOrderById = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id)
-    .populate("user", "name email")
-    .populate("orderItems.pizza", "name");
+  .populate('user', 'name email')
+  .populate('orderItems.pizza', 'name');
 
-  if (!order) {
+
+  if (order) {
+    res.status(200).json(order);
+  } else {
     res.status(404);
     throw new Error("Order Not Found!");
   }
-
-  res.status(200).json(order);
 });
 
-
-// ==============================
-// Update Order
-// ==============================
+// @desc    Update Order by Id
+// @route   PUT /api/orders/:id
+// @access  Admin
 
 const updateOrderById = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
 
-  if (!order) {
-    res.status(404);
-    throw new Error("Order Not Found!");
-  }
+  if (order) {
+    order.status = req.body.status || order.status;
 
-  order.status = req.body.status || order.status;
-
-  if (order.status === "Delivered") {
-    order.deliveredAt = Date.now();
-
-    const user = await User.findById(order.user);
-
-    try {
+    if (order.status === "Delivered") {
+      order.deliveredAt = Date.now();
+      // Send delivery email to user
+      const user = await User.findById(order.user);
       if (user && user.email) {
         await sendEmail({
           to: user.email,
           subject: "Your Pizza Order Has Been Delivered!",
-          html: `
-            <h1>Order Delivered</h1>
-            <p>Hi ${user.name || ""},</p>
-            <p>Your order <b>${order._id}</b> has been delivered!</p>
-            <p>We hope you enjoy your meal.</p>
-            <p>Thank you for choosing PizzaHub!</p>
-          `,
+          templateOptions: {
+            title: "Order Delivered",
+            greeting: `Hi ${user.name || ""},`,
+            message: `Your order <b>${order._id}</b> has been delivered!<br><br>We hope you enjoy your meal. Thank you for choosing PizzaHub!`,
+          },
         });
       }
-    } catch (emailError) {
-      console.error("Delivery email failed:", emailError.message);
+    } else {
+      order.deliveredAt = undefined;
+    }
+
+    const updatedOrder = await order.save();
+
+    if (updatedOrder) {
+      res.status(200).json({
+        updatedOrder,
+        message: "Order Updated Successfully!",
+      });
+    } else {
+      res.status(500);
+      throw new Error("Order Update Failed!");
     }
   } else {
-    order.deliveredAt = undefined;
+    res.status(404);
+    throw new Error("Order Not Found!");
   }
-
-  const updatedOrder = await order.save();
-
-  res.status(200).json({
-    updatedOrder,
-    message: "Order Updated Successfully!",
-  });
 });
 
-
-// ==============================
-// Delete Order
-// ==============================
+// @desc    Delete Order by Id
+// @route   DELETE /api/orders/:id
+// @access  Admin
 
 const deleteOrderById = asyncHandler(async (req, res) => {
   const order = await Order.findByIdAndDelete(req.params.id);
 
-  if (!order) {
+  if (order) {
+    res.status(200).json({
+      message: "Order Deleted Successfully!",
+    });
+  } else {
     res.status(404);
     throw new Error("Order Not Found!");
   }
-
-  res.status(200).json({
-    message: "Order Deleted Successfully!",
-  });
 });
 
-
-// ==============================
 // Export Controllers
-// ==============================
-
 module.exports = {
   createRazorpayOrder,
   createOrder,
