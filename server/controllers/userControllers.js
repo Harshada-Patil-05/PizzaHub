@@ -162,7 +162,7 @@ const verifyUser = asyncHandler(async (req, res) => {
     throw new Error('All Fields Are Required!');
   } else {
     if (emailValidator.validate(email)) {
-      const user = await User.findOne({ email, _id: req.user._id });
+      const user = await User.findOne({ email });
 
       if (user) {
         if (user.verificationCode === verificationCode) {
