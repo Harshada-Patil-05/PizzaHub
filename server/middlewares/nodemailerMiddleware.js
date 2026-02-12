@@ -1,41 +1,28 @@
-const nodemailer = require('nodemailer');
-const dotenv = require('dotenv');
-const emailBaseTemplate = require('../utils/emailBaseTemplate');
-
-dotenv.config();
+const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  service: "gmail",
   auth: {
-    user: `${process.env.SENDER_EMAIL}`,
-    pass: `${process.env.SENDER_PASSWORD}`,
+    user: process.env.SENDER_EMAIL,
+    pass: process.env.SENDER_PASSWORD,
   },
 });
 
-/**
- * sendEmail - Sends a professional HTML email using the base template
- * @param {Object} options - { to, subject, templateOptions, from, text }
- * templateOptions: { title, greeting, message, actionText, actionUrl, closing, signature, extra }
- */
-const sendEmail = async ({ to, subject, templateOptions = {}, from, text }) => {
+const sendTestEmail = async () => {
   try {
-    const html = emailBaseTemplate(templateOptions);
-    const mailOptions = {
-      from: from || process.env.SENDER_EMAIL,
-      to,
-      subject,
-      html,
-      text: text || templateOptions.message || '',
-    };
-    const response = await transporter.sendMail(mailOptions);
-    return response;
+    console.log("Trying to send email...");
+
+    const info = await transporter.sendMail({
+      from: process.env.SENDER_EMAIL,
+      to: process.env.SENDER_EMAIL, // send to yourself
+      subject: "Test Email from Render",
+      text: "If you receive this, nodemailer works!",
+    });
+
+    console.log("Email sent successfully:", info.response);
   } catch (error) {
-    console.error('Error sending email:', error);
-    throw new Error('Email could not be sent!');
+    console.error("Email failed:", error);
   }
 };
 
-module.exports = sendEmail;
+module.exports = sendTestEmail;
