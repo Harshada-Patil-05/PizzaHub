@@ -1,12 +1,23 @@
-import { Outlet } from 'react-router-dom';
-
-import Layout from './components/layout/Layout';
+import { Outlet } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import Layout from "./components/layout/Layout";
 
 function App() {
   return (
-    <Layout>
-      <Outlet />
-    </Layout>
+    <>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          style: {
+            marginTop: "90px",
+          },
+        }}
+      />
+
+      <Layout>
+        <Outlet />
+      </Layout>
+    </>
   );
 }
 
