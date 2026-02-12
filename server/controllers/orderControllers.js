@@ -171,26 +171,34 @@ const createOrder = asyncHandler(async (req, res) => {
                         <p>Thank you for choosing our service!</p>
                       `;
 
-                      await sendEmail({
-                        to: user.email,
-                        subject: "Order Confirmation",
-                        templateOptions: {
-                          title: "Order Confirmation",
-                          greeting: `Hi ${user.name || ""},`,
-                          message: `
-          <p>Your order has been successfully placed!</p>
-          <p>Order Details:</p>
-          <ul>
-            ${orderItemsWithNames
-              .map((item) => `<li>${item.qty} x ${item.name}</li>`)
-              .join("")}
-          </ul>
-          <p>Total Price: ${totalPrice}</p>
-          <p>Delivery Address: ${deliveryAddress.address}, ${deliveryAddress.city}, ${deliveryAddress.postalCode}, ${deliveryAddress.country}</p>
-          <p>Thank you for choosing our service!</p>
-        `,
-                        },
-                      });
+                     await sendEmail({
+                      to: user.email,
+                      subject: "Order Confirmation",
+                      html: `
+                        <h1>Order Confirmation</h1>
+                        <p>Hi ${user.name || ""},</p>
+                        <p>Your order has been successfully placed!</p>
+                    
+                        <h3>Order Details:</h3>
+                        <ul>
+                          ${orderItemsWithNames
+                            .map((item) => `<li>${item.qty} x ${item.name}</li>`)
+                            .join("")}
+                        </ul>
+                    
+                        <p><strong>Total Price:</strong> ₹${totalPrice}</p>
+                    
+                        <p>
+                          <strong>Delivery Address:</strong><br/>
+                          ${deliveryAddress.address},<br/>
+                          ${deliveryAddress.city}, ${deliveryAddress.postalCode},<br/>
+                          ${deliveryAddress.country}
+                        </p>
+                    
+                        <p>Thank you for choosing our service!</p>
+                      `,
+                    });
+
                     }
 
                     res.status(200).json({
