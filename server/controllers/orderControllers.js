@@ -9,7 +9,7 @@ const { updateInventoryQuantity } = require("../utils/inventoryUtils");
 const Order = require("../schemas/orderSchema");
 const Pizza = require("../schemas/pizzaSchema");
 const User = require("../schemas/userSchema");
-const sendEmail = require("../middlewares/nodemailerMiddleware");
+const sendEmail = require("../utils/sendEmail");
 
 // Initialize Controllers
 
