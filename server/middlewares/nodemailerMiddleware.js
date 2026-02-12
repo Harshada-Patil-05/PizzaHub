@@ -1,38 +1,24 @@
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
+  host: "smtp.sendgrid.net",
   port: 587,
-  secure: false, // true only for 465
   auth: {
-    user: process.env.SENDER_EMAIL,
-    pass: process.env.SENDER_PASSWORD,
+    user: "apikey", // IMPORTANT: must be literally "apikey"
+    pass: process.env.SENDGRID_API_KEY,
   },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
-
-// Verify SMTP connection
-transporter.verify(function (error, success) {
-  if (error) {
-    console.log("SMTP Error:", error);
-  } else {
-    console.log("SMTP Server is ready to send messages");
-  }
 });
 
 const sendTestEmail = async () => {
   try {
-    console.log("Trying to send email...");
-    console.log("EMAIL:", process.env.SENDER_EMAIL);
-    console.log("PASSWORD:", process.env.SENDER_PASSWORD);
+    console.log("Trying to send email via SendGrid...");
+    console.log("API KEY EXISTS:", !!process.env.SENDGRID_API_KEY);
 
     const info = await transporter.sendMail({
-      from: process.env.SENDER_EMAIL,
-      to: process.env.SENDER_EMAIL,
-      subject: "Test Email from Render",
-      text: "If you receive this, nodemailer works!",
+      from: "pizzaapp.notifications@gmail.com", // must match verified sender in SendGrid
+      to: "pizzaapp.notifications@gmail.com",
+      subject: "Test Email from Render (SendGrid)",
+      text: "If you receive this, SendGrid works!",
     });
 
     console.log("Email sent successfully:", info.response);
