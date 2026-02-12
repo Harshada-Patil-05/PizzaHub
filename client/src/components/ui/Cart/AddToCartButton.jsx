@@ -1,14 +1,15 @@
-import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
-import { FaCartPlus } from 'react-icons/fa';
-import { useDispatch, useSelector } from 'react-redux';
+import PropTypes from "prop-types";
+import { useEffect, useState } from "react";
+import { FaCartPlus } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
 
 // Import Thunks
-import { getUserDetails } from '../../../redux/asyncThunks/userThunks';
-import { addToCart } from '../../../redux/slices/cartSlice';
+import { getUserDetails } from "../../../redux/asyncThunks/userThunks";
+import { addToCart } from "../../../redux/slices/cartSlice";
 
 // Import Components
-import Button from '../Button';
+import Button from "../Button";
 
 function AddToCartButton({ id, qty }) {
   const dispatch = useDispatch();
@@ -18,9 +19,16 @@ function AddToCartButton({ id, qty }) {
 
   const handleAddToCart = () => {
     if (userDetails && !userDetails.isVerified) {
-      alert('Please verify your email address first!');
+      toast.error("Please verify your email address first ❌");
     } else {
       dispatch(addToCart({ id, qty }));
+      toast.success("Item added to cart 🛒", {
+        style: {
+          borderRadius: "10px",
+          background: "#f97316",
+          color: "#fff",
+        },
+      });
     }
   };
 
