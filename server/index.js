@@ -7,6 +7,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 
+
 // Load environment variables (DO NOT move .env)
 dotenv.config();
 
@@ -20,12 +21,15 @@ const userRoutes = require('./routes/userRoutes');
 const pizzaRoutes = require('./routes/pizzaRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
+const sendTestEmail = require('./middlewares/nodemailer');
 
 // Create Express App
 const app = express();
 
 // Connect to Database
 connectDb();
+sendTestEmail();
+
 
 // Dev logging
 if (process.env.NODE_ENV === 'development') {
