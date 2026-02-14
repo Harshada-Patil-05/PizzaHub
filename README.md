@@ -1,32 +1,14 @@
-# Pizza Delivery System App - MERN
+# PizzaHub - Online Pizza Ordering System (MERN)
 
-> Pizza Delivery System App (MERN - MongoDB, Express, React, Node.js) is a comprehensive web application that enables users to customize and order pizzas online. This project showcases a full-stack development approach with a focus on user experience, functionality, and security. The app includes a user-friendly frontend interface for ordering pizzas, an admin dashboard for managing orders and inventory, and a secure backend server for processing orders and payments.
+> PizzaHub is a full-stack MERN (MongoDB, Express.js, React.js, Node.js) web application designed to deliver a seamless online pizza ordering experience. The platform enables users to customize pizzas with dynamic ingredient selection, securely place orders, and track order status in real time.
 
-<br />
-<div align="center">
-  <p align="center">
-    <br />
-    <a href="https://github.com/itxSaaad/pizza-palette-app-mern-OIBSIP-task-1">
-    <strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://pizza-palette-app-mern.vercel.app/">View Demo</a>
-    ·
-    <a href="https://github.com/itxSaaad/pizza-palette-app-mern-OIBSIP-task-1/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/itxSaaad/pizza-palette-app-mern-OIBSIP-task-1/issues">Request Feature</a>
-  </p>
-</div>
+It features a responsive user interface, a powerful admin dashboard for managing orders and inventory, automated inventory updates, secure JWT-based authentication, Razorpay payment integration, and email notifications.
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
+This project demonstrates end-to-end full-stack development, RESTful API design, secure authentication, state management with Redux Toolkit, and deployment-ready architecture.
 
 ## Live Preview Project
 
-[Live Preview](https://pizza-palette-app-mern.vercel.app/)
+[Live Preview](https://pizzahub-online.vercel.app/)
 
 ## Features
 
@@ -160,32 +142,9 @@ Don't forget to give the project a star! Thanks again!
 5. Push to the branch (`git push origin feature/AmazingFeature`)
 6. Open a pull request
 
-## Contact
+## 👤 Developed By
+**Harshada Gulabrao Patil**  
+Full-Stack Web Developer  
 
-- Twitter: [@itxSaaad](https://twitter.com/itxSaaad)
-- LinkedIn: [@itxSaaad](https://www.linkedin.com/in/itxsaaad/)
-- Portfolio: [Muhammad Saad Faisal](https://codesbysaaad.tech/)
-- Email: [saadstudent.cs@gmail.com](mailto:saadstudent.cs@gmail.com)
-
-## License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-## Support
-
-Give ⭐️ if you like this project!
-
-<a href="https://www.buymeacoffee.com/itxSaaad"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" width="200" /></a>
-
-<!-- MARKDOWN LINKS & IMAGES -->
-
-[contributors-shield]: https://img.shields.io/github/contributors/itxsaaad/pizza-palette-app-mern-OIBSIP-task-1.svg?style=for-the-badge
-[contributors-url]: https://github.com/itxsaaad/pizza-palette-app-mern-OIBSIP-task-1/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/itxsaaad/pizza-palette-app-mern-OIBSIP-task-1.svg?style=for-the-badge
-[forks-url]: https://github.com/itxsaaad/pizza-palette-app-mern-OIBSIP-task-1/network/members
-[stars-shield]: https://img.shields.io/github/stars/itxsaaad/pizza-palette-app-mern-OIBSIP-task-1.svg?style=for-the-badge
-[stars-url]: https://github.com/itxsaaad/pizza-palette-app-mern-OIBSIP-task-1/stargazers
-[issues-shield]: https://img.shields.io/github/issues/itxsaaad/pizza-palette-app-mern-OIBSIP-task-1.svg?style=for-the-badge
-[issues-url]: https://github.com/itxsaaad/pizza-palette-app-mern-OIBSIP-task-1/issues
-[license-shield]: https://img.shields.io/github/license/itxsaaad/pizza-palette-app-mern-OIBSIP-task-1.svg?style=for-the-badge
-[license-url]: https://github.com/itxsaaad/pizza-palette-app-mern-OIBSIP-task-1/blob/main/LICENSE.md
+🔗 LinkedIn: [Harshada_Patil](https://www.linkedin.com/in/harshada-g-patil/)  
+📧 Email: harshupatil0405@gmail.com
