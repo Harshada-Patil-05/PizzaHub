@@ -1,9 +1,7 @@
 # PizzaHub - Online Pizza Ordering System (MERN)
 
 > PizzaHub is a full-stack MERN (MongoDB, Express.js, React.js, Node.js) web application designed to deliver a seamless online pizza ordering experience. The platform enables users to customize pizzas with dynamic ingredient selection, securely place orders, and track order status in real time.
-
 It features a responsive user interface, a powerful admin dashboard for managing orders and inventory, automated inventory updates, secure JWT-based authentication, Razorpay payment integration, and email notifications.
-
 This project demonstrates end-to-end full-stack development, RESTful API design, secure authentication, state management with Redux Toolkit, and deployment-ready architecture.
 
 ## Live Preview Project
